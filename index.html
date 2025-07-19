@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Wave Physics Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .control-panel label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .control-panel input[type="range"] {
+            width: 100%;
+        }
+        .control-panel .value-display {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+            border-radius: 6px 6px 0 0;
+        }
+        .tab-button.active {
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        canvas {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        .direction-toggle label {
+            padding: 0.25rem 0.75rem;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .direction-toggle input:checked + label {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Interactive Wave Physics Lab</h1>
+            <p class="text-md text-gray-600 mt-2">Visually explore the principles of wave mechanics.</p>
+        </header>
+
+        <main class="bg-white p-6 rounded-xl shadow-lg">
+            <!-- Navigation Tabs -->
+            <div class="mb-6">
+                <nav class="flex flex-wrap" id="tab-navigation">
+                    <button data-tab="superposition" class="tab-button active text-gray-600 hover:text-indigo-600 py-3 px-5 font-medium">
+                        Superposition
+                    </button>
+                    <button data-tab="standing-waves" class="tab-button text-gray-600 hover:text-indigo-600 py-3 px-5 font-medium">
+                        Standing Waves
+                    </button>
+                    <button data-tab="beats" class="tab-button text-gray-600 hover:text-indigo-600 py-3 px-5 font-medium">
+                        Beats
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content Area -->
+            <div id="app-content">
+                <!-- Superposition Tab -->
+                <div id="superposition" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1 space-y-6 control-panel">
+                            <div class="p-4 bg-indigo-50 rounded-lg">
+                                <h4 class="font-bold text-lg text-indigo-800 mb-3">Wave 1</h4>
+                                <div>
+                                    <label for="s-amp1">Amplitude: <span id="s-amp1-val" class="value-display">50</span></label>
+                                    <input type="range" id="s-amp1" min="0" max="100" value="50">
+                                </div>
+                                <div>
+                                    <label for="s-freq1">Frequency: <span id="s-freq1-val" class="value-display">2.0</span></label>
+                                    <input type="range" id="s-freq1" min="0.5" max="10" value="2" step="0.1">
+                                </div>
+                                <div>
+                                    <label for="s-phase1">Phase: <span id="s-phase1-val" class="value-display">0</span>°</label>
+                                    <input type="range" id="s-phase1" min="0" max="360" value="0" step="1">
+                                </div>
+                                <div class="mt-2">
+                                    <label>Direction</label>
+                                    <div class="flex rounded-md shadow-sm direction-toggle" role="group">
+                                        <input type="radio" id="s-dir1-right" name="s-dir1" value="1" class="hidden" checked>
+                                        <label for="s-dir1-right" class="rounded-l-md">Right →</label>
+                                        <input type="radio" id="s-dir1-left" name="s-dir1" value="-1" class="hidden">
+                                        <label for="s-dir1-left" class="rounded-r-md">← Left</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-pink-50 rounded-lg">
+                                <h4 class="font-bold text-lg text-pink-800 mb-3">Wave 2</h4>
+                                <div>
+                                    <label for="s-amp2">Amplitude: <span id="s-amp2-val" class="value-display">50</span></label>
+                                    <input type="range" id="s-amp2" min="0" max="100" value="50">
+                                </div>
+                                <div>
+                                    <label for="s-freq2">Frequency: <span id="s-freq2-val" class="value-display">2.0</span></label>
+                                    <input type="range" id="s-freq2" min="0.5" max="10" value="2" step="0.1">
+                                </div>
+                                <div>
+                                    <label for="s-phase2">Phase: <span id="s-phase2-val" class="value-display">0</span>°</label>
+                                    <input type="range" id="s-phase2" min="0" max="360" value="0" step="1">
+                                </div>
+                                <div class="mt-2">
+                                    <label>Direction</label>
+                                    <div class="flex rounded-md shadow-sm direction-toggle" role="group">
+                                        <input type="radio" id="s-dir2-right" name="s-dir2" value="1" class="hidden" checked>
+                                        <label for="s-dir2-right" class="rounded-l-md">Right →</label>
+                                        <input type="radio" id="s-dir2-left" name="s-dir2" value="-1" class="hidden">
+                                        <label for="s-dir2-left" class="rounded-r-md">← Left</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <canvas id="superposition-canvas" class="w-full h-64 md:h-96"></canvas>
+                            <div class="flex items-center justify-center space-x-6 mt-4 p-2 bg-gray-100 rounded-lg">
+                                <div class="flex items-center"><div class="w-4 h-1 bg-indigo-500 mr-2"></div><span class="text-sm">Wave 1</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-pink-500 mr-2"></div><span class="text-sm">Wave 2</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-gray-800 mr-2 font-semibold"></div><span class="text-sm font-semibold">Superposition</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="standing-waves" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1 space-y-6 control-panel">
+                            <div class="p-4 bg-teal-50 rounded-lg">
+                                <h4 class="font-bold text-lg text-teal-800 mb-3">Wave Controls</h4>
+                                <p class="text-sm text-gray-600 mb-4">Two identical waves are traveling in opposite directions. Control their properties below.</p>
+                                <div>
+                                    <label for="sw-amp">Amplitude: <span id="sw-amp-val" class="value-display">75</span></label>
+                                    <input type="range" id="sw-amp" min="10" max="100" value="75">
+                                </div>
+                                <div>
+                                    <label for="sw-freq">Frequency (Harmonic): <span id="sw-freq-val" class="value-display">3.0</span></label>
+                                    <input type="range" id="sw-freq" min="1" max="10" value="3" step="0.5">
+                                </div>
+                            </div>
+                             <div class="p-4 bg-gray-100 rounded-lg">
+                                <h4 class="font-semibold text-lg mb-2">Concept Explanation</h4>
+                                <p class="text-sm text-gray-700">A <strong>standing wave</strong> is formed when two identical waves travel in opposite directions. It has points of no displacement called <strong>nodes</strong> and points of maximum displacement called <strong>antinodes</strong>. Change the frequency to see different harmonics (resonant modes).</p>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <canvas id="standing-wave-canvas" class="w-full h-64 md:h-96"></canvas>
+                             <div class="flex items-center justify-center space-x-6 mt-4 p-2 bg-gray-100 rounded-lg">
+                                <div class="flex items-center"><div class="w-4 h-1 bg-indigo-500 mr-2"></div><span class="text-sm">Wave 1 (Right →)</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-pink-500 mr-2"></div><span class="text-sm">Wave 2 (← Left)</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-teal-600 mr-2 font-semibold"></div><span class="text-sm font-semibold">Standing Wave</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="beats" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1 space-y-6 control-panel">
+                             <div class="p-4 bg-orange-50 rounded-lg">
+                                <h4 class="font-bold text-lg text-orange-800 mb-3">Wave Controls</h4>
+                                <p class="text-sm text-gray-600 mb-4">Beats occur when two waves of slightly different frequencies interfere. Amplitudes are kept equal for a clear effect.</p>
+                                <div>
+                                    <label for="b-freq1">Frequency 1: <span id="b-freq1-val" class="value-display">4.0</span></label>
+                                    <input type="range" id="b-freq1" min="1" max="10" value="4" step="0.1">
+                                </div>
+                                 <div>
+                                    <label for="b-freq2">Frequency 2: <span id="b-freq2-val" class="value-display">4.5</span></label>
+                                    <input type="range" id="b-freq2" min="1" max="10" value="4.5" step="0.1">
+                                </div>
+                            </div>
+                             <div class="p-4 bg-gray-100 rounded-lg">
+                                <h4 class="font-semibold text-lg mb-2">Beat Frequency</h4>
+                                <p class="text-2xl font-bold text-center text-orange-600" id="beat-freq-display">0.5 Hz</p>
+                                <p class="text-sm text-gray-700 mt-2">The beat frequency is the difference between the two source frequencies: <br><strong>f<sub>beat</sub> = |f<sub>1</sub> - f<sub>2</sub>|</strong>. This is the frequency at which the volume appears to oscillate.</p>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                             <canvas id="beats-canvas" class="w-full h-64 md:h-96"></canvas>
+                              <div class="flex items-center justify-center space-x-6 mt-4 p-2 bg-gray-100 rounded-lg">
+                                <div class="flex items-center"><div class="w-4 h-1 bg-indigo-500 mr-2"></div><span class="text-sm">Wave 1</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-pink-500 mr-2"></div><span class="text-sm">Wave 2</span></div>
+                                <div class="flex items-center"><div class="w-4 h-1 bg-orange-600 mr-2 font-semibold"></div><span class="text-sm font-semibold">Resultant (Beats)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Animation Controls -->
+            <div class="mt-8 flex items-center justify-center space-x-4 border-t pt-6">
+                <button id="play-pause-btn" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition w-32 text-lg font-semibold">Pause</button>
+                <button id="reset-btn" class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-lg">Reset</button>
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-sm text-gray-500">
+            <p>Created with Gemini. &copy; 2025 Wave Physics Lab.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Global State ---
+            let isPlaying = true;
+            let time = 0;
+            let currentTab = 'superposition';
+
+            // --- Canvases and Contexts ---
+            const canvases = {
+                superposition: document.getElementById('superposition-canvas'),
+                'standing-waves': document.getElementById('standing-wave-canvas'),
+                beats: document.getElementById('beats-canvas'),
+            };
+            const ctxs = {
+                superposition: canvases.superposition.getContext('2d'),
+                'standing-waves': canvases['standing-waves'].getContext('2d'),
+                beats: canvases.beats.getContext('2d'),
+            };
+            
+            // --- Global Controls ---
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            // --- Wave Parameters ---
+            const params = {
+                superposition: {
+                    wave1: { amp: 50, freq: 2, phase: 0, dir: 1, color: '#6366f1' },
+                    wave2: { amp: 50, freq: 2, phase: 0, dir: 1, color: '#ec4899' },
+                    result: { color: '#1f2937' }
+                },
+                'standing-waves': {
+                    wave1: { amp: 75, freq: 3, phase: 0, dir: 1, color: '#6366f1' },
+                    wave2: { amp: 75, freq: 3, phase: 0, dir: -1, color: '#ec4899' },
+                    result: { color: '#0d9488' }
+                },
+                beats: {
+                    wave1: { amp: 60, freq: 4.0, phase: 0, dir: 1, color: '#6366f1' },
+                    wave2: { amp: 60, freq: 4.5, phase: 0, dir: 1, color: '#ec4899' },
+                    result: { color: '#ea580c' }
+                }
+            };
+            
+            // --- Canvas Sizing ---
+            function resizeAllCanvases() {
+                for (const key in canvases) {
+                    const canvas = canvases[key];
+                    const width = canvas.clientWidth;
+                    const height = canvas.clientHeight;
+                    if (canvas.width !== width || canvas.height !== height) {
+                        canvas.width = width;
+                        canvas.height = height;
+                    }
+                }
+            }
+            window.addEventListener('resize', resizeAllCanvases);
+
+            // --- Drawing Logic ---
+            function drawWave(ctx, wave, time, width, height) {
+                ctx.beginPath();
+                ctx.strokeStyle = wave.color;
+                ctx.lineWidth = 2;
+                const yOffset = height / 2;
+                const phaseRad = wave.phase * (Math.PI / 180);
+
+                for (let x = 0; x < width; x++) {
+                    const k = (2 * Math.PI) / (width / wave.freq); // Wavenumber
+                    const omega = 2 * Math.PI * 0.005; // Angular frequency
+                    const y = wave.amp * Math.sin(k * x - wave.dir * omega * time + phaseRad);
+                    ctx.lineTo(x, yOffset + y);
+                }
+                ctx.stroke();
+            }
+
+            function drawSuperposition(ctx, wave1, wave2, resultColor, time, width, height) {
+                ctx.beginPath();
+                ctx.strokeStyle = resultColor;
+                ctx.lineWidth = 3;
+                const yOffset = height / 2;
+                const phase1Rad = wave1.phase * (Math.PI / 180);
+                const phase2Rad = wave2.phase * (Math.PI / 180);
+
+                for (let x = 0; x < width; x++) {
+                    const k1 = (2 * Math.PI) / (width / wave1.freq);
+                    const k2 = (2 * Math.PI) / (width / wave2.freq);
+                    const omega = 2 * Math.PI * 0.005;
+
+                    const y1 = wave1.amp * Math.sin(k1 * x - wave1.dir * omega * time + phase1Rad);
+                    const y2 = wave2.amp * Math.sin(k2 * x - wave2.dir * omega * time + phase2Rad);
+                    ctx.lineTo(x, yOffset + y1 + y2);
+                }
+                ctx.stroke();
+            }
+
+            function drawAxes(ctx, width, height) {
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, height / 2);
+                ctx.lineTo(width, height / 2);
+                ctx.stroke();
+            }
+            
+            // --- Scene Drawing Functions ---
+            function drawScene(tab) {
+                const ctx = ctxs[tab];
+                const canvas = canvases[tab];
+                const p = params[tab];
+                const { width, height } = canvas;
+
+                ctx.clearRect(0, 0, width, height);
+                drawAxes(ctx, width, height);
+
+                drawWave(ctx, p.wave1, time, width, height);
+                drawWave(ctx, p.wave2, time, width, height);
+                drawSuperposition(ctx, p.wave1, p.wave2, p.result.color, time, width, height);
+            }
+
+            // --- Animation Loop ---
+            function animate() {
+                if (isPlaying) {
+                    drawScene(currentTab);
+                    time++;
+                }
+                requestAnimationFrame(animate);
+            }
+
+            // --- Control Setup ---
+            function setupControls() {
+                // Superposition
+                document.getElementById('s-amp1').addEventListener('input', e => params.superposition.wave1.amp = +e.target.value);
+                document.getElementById('s-freq1').addEventListener('input', e => params.superposition.wave1.freq = +e.target.value);
+                document.getElementById('s-phase1').addEventListener('input', e => params.superposition.wave1.phase = +e.target.value);
+                document.querySelectorAll('input[name="s-dir1"]').forEach(el => el.addEventListener('change', e => params.superposition.wave1.dir = +e.target.value));
+
+                document.getElementById('s-amp2').addEventListener('input', e => params.superposition.wave2.amp = +e.target.value);
+                document.getElementById('s-freq2').addEventListener('input', e => params.superposition.wave2.freq = +e.target.value);
+                document.getElementById('s-phase2').addEventListener('input', e => params.superposition.wave2.phase = +e.target.value);
+                document.querySelectorAll('input[name="s-dir2"]').forEach(el => el.addEventListener('change', e => params.superposition.wave2.dir = +e.target.value));
+
+                // Standing Waves
+                document.getElementById('sw-amp').addEventListener('input', e => {
+                    params['standing-waves'].wave1.amp = +e.target.value;
+                    params['standing-waves'].wave2.amp = +e.target.value;
+                });
+                document.getElementById('sw-freq').addEventListener('input', e => {
+                    params['standing-waves'].wave1.freq = +e.target.value;
+                    params['standing-waves'].wave2.freq = +e.target.value;
+                });
+
+                // Beats
+                document.getElementById('b-freq1').addEventListener('input', e => params.beats.wave1.freq = +e.target.value);
+                document.getElementById('b-freq2').addEventListener('input', e => params.beats.wave2.freq = +e.target.value);
+
+                // Update displays on input
+                document.querySelectorAll('.control-panel input').forEach(input => {
+                    input.addEventListener('input', updateAllDisplays);
+                });
+            }
+            
+            // --- Value Display Updates ---
+            function updateAllDisplays() {
+                // Superposition
+                document.getElementById('s-amp1-val').textContent = params.superposition.wave1.amp.toFixed(0);
+                document.getElementById('s-freq1-val').textContent = params.superposition.wave1.freq.toFixed(1);
+                document.getElementById('s-phase1-val').textContent = params.superposition.wave1.phase.toFixed(0) + '°';
+                document.getElementById('s-amp2-val').textContent = params.superposition.wave2.amp.toFixed(0);
+                document.getElementById('s-freq2-val').textContent = params.superposition.wave2.freq.toFixed(1);
+                document.getElementById('s-phase2-val').textContent = params.superposition.wave2.phase.toFixed(0) + '°';
+
+                // Standing Waves
+                document.getElementById('sw-amp-val').textContent = params['standing-waves'].wave1.amp.toFixed(0);
+                document.getElementById('sw-freq-val').textContent = params['standing-waves'].wave1.freq.toFixed(1);
+
+                // Beats
+                document.getElementById('b-freq1-val').textContent = params.beats.wave1.freq.toFixed(1);
+                document.getElementById('b-freq2-val').textContent = params.beats.wave2.freq.toFixed(1);
+                const beatFreq = Math.abs(params.beats.wave1.freq - params.beats.wave2.freq);
+                document.getElementById('beat-freq-display').textContent = beatFreq.toFixed(1) + ' Hz';
+            }
+
+            // --- Global Control Listeners ---
+            playPauseBtn.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
+            });
+            
+            resetBtn.addEventListener('click', () => {
+                time = 0;
+                if (!isPlaying) {
+                    isPlaying = true;
+                    playPauseBtn.textContent = 'Pause';
+                }
+            });
+
+            // --- Tab Navigation ---
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    currentTab = tab.getAttribute('data-tab');
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.add('hidden'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(currentTab).classList.remove('hidden');
+                    
+                    resizeAllCanvases();
+                    resetBtn.click(); // Reset time on tab switch
+                });
+            });
+
+            // --- Initialization ---
+            resizeAllCanvases();
+            setupControls();
+            updateAllDisplays();
+            requestAnimationFrame(animate);
+        });
+    </script>
+</body>
+</html>
